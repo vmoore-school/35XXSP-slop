@@ -53,7 +53,7 @@ RUN sed -i 's/^Components: main$/Components: main non-free-firmware/' /etc/apt/s
       ostree ostree-boot dracut skopeo podman bubblewrap zstd \
       e2fsprogs dosfstools fdisk util-linux kmod \
       iwd iw iproute2 firmware-realtek \
-      openssh-server ca-certificates less nano && \
+      openssh-server ca-certificates less nano fastfetch && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=bootc-builder /out/ /
