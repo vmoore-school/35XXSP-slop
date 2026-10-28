@@ -102,7 +102,8 @@ mounts on any PC. The display stays dark until Linux's panel driver loads, so:
   `bootslot=2` in `rg35xxsp.txt` on the SD card's ESP from a PC.
 - **Dark screen:** newer units have a different panel. Uncomment the v2-panel
   `fdtfile=` line in `rg35xxsp.txt`.
-- **WiFi:** `iwctl` (iwd), with systemd-networkd handling DHCP.
+- **WiFi:** `iwctl` (iwd), with systemd-networkd handling DHCP. The login
+  screen shows the WiFi IP, and the device answers to `rg35xxsp.local` (mDNS).
 
 ## Updating ROCKNIX bits
 

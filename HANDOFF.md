@@ -50,10 +50,11 @@ display and systemd all come up.
      ```
      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFF2qaoQ6yNGFw76Lt6Jw/vj6vp5bXw1+6GJtphECARL valerie@zirconium
      ```
-3. Boot the device and wait a minute. The IP address is in
-   `logs/status.txt` on the card (written 45 s after boot, then every
-   5 minutes), or in the router's DHCP list.
-4. `ssh root@<ip>`
+3. Boot the device. Once WiFi connects, the login screen shows its IP
+   address. It's also in `logs/status.txt` on the card (written 45 s after
+   boot) and in the router's device list as `rg35xxsp`.
+4. `ssh root@rg35xxsp.local` (mDNS), or `ssh root@<ip>` if `.local` names
+   don't resolve on your network.
 
 Provisioning reruns every boot, so editing these files later and rebooting
 updates WiFi and keys.

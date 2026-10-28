@@ -1,3 +1,4 @@
-# ttyS0 is the UART on the board's test pads.
-kargs = ["console=ttyS0,115200", "console=tty0"]
+# ttyS0 is the UART on the board's test pads. The hostname is set here because
+# container builds bind-mount over /etc/hostname.
+kargs = ["console=ttyS0,115200", "console=tty0", "systemd.hostname=rg35xxsp"]
 match-architectures = ["aarch64"]

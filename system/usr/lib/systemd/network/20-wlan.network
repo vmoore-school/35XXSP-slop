@@ -5,3 +5,4 @@ Type=wlan
 [Network]
 DHCP=yes
 IgnoreCarrierLoss=3s
+MulticastDNS=yes
