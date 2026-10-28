@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      lpddr3:
+        description: Also build the LPDDR3 (2026 board revision) disk image
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -37,15 +42,28 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
           sudo podman push "$IMAGE" "docker://$TARGET_IMGREF"
 
-      - name: Build disk images
+      # One artifact per RAM variant so each downloads on its own. LPDDR3 is
+      # only built on request (Run workflow -> lpddr3) while testing on LPDDR4.
+      - name: Build LPDDR4 disk image
         run: |
-          for ram in lpddr4 lpddr3; do
-            just disk-image "$ram" 8G
-            zstd -T0 -10 --rm output/rg35xxsp.img -o "output/rg35xxsp-${ram}.img.zst"
-          done
+          just disk-image lpddr4 8G
+          zstd -T0 -10 --rm output/rg35xxsp.img -o output/rg35xxsp-lpddr4.img.zst
 
       - uses: actions/upload-artifact@v4
         with:
-          name: rg35xxsp-disk-images
-          path: output/*.img.zst
+          name: rg35xxsp-lpddr4
+          path: output/rg35xxsp-lpddr4.img.zst
+          compression-level: 0
+
+      - name: Build LPDDR3 disk image
+        if: inputs.lpddr3
+        run: |
+          just disk-image lpddr3 8G
+          zstd -T0 -10 --rm output/rg35xxsp.img -o output/rg35xxsp-lpddr3.img.zst
+
+      - uses: actions/upload-artifact@v4
+        if: inputs.lpddr3
+        with:
+          name: rg35xxsp-lpddr3
+          path: output/rg35xxsp-lpddr3.img.zst
           compression-level: 0

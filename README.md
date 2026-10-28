@@ -55,8 +55,9 @@ You need podman and [just](https://github.com/casey/just).
 
 **In CI (recommended):** push to GitHub. `.github/workflows/build.yaml` runs
 on GitHub's arm64 runners, which are free for public repositories. It pushes
-`ghcr.io/<owner>/rg35xxsp-bootc:latest` and uploads compressed disk images
-for both RAM variants as a workflow artifact.
+`ghcr.io/<owner>/rg35xxsp-bootc:latest` and uploads the LPDDR4 disk image as
+the `rg35xxsp-lpddr4` artifact. The LPDDR3 image (`rg35xxsp-lpddr3`) is only
+built when the workflow is run manually with the `lpddr3` option.
 
 **Locally on x86_64:** the kernel and U-Boot are cross-compiled natively.
 The Debian and bootc stages run as arm64, which needs qemu-user binfmt
