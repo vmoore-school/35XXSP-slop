@@ -1,0 +1,7 @@
+# iwd handles WiFi authentication; networkd does DHCP on top.
+[Match]
+Type=wlan
+
+[Network]
+DHCP=yes
+IgnoreCarrierLoss=3s

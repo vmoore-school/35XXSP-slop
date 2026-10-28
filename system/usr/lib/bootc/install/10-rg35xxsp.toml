@@ -1,0 +1,8 @@
+# U-Boot reads the sysroot directly, so keep it on ext4. Booting is handled by
+# disk/boot.cmd plus ostree's U-Boot backend rather than bootupd, which only
+# supports GRUB.
+[install.filesystem.root]
+type = "ext4"
+
+[install]
+bootloader = "none"

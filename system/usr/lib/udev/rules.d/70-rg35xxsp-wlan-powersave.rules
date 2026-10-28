@@ -1,0 +1,2 @@
+# From ROCKNIX: RTL8821CS power saving causes dropouts and slow reconnects.
+ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="sdio", KERNELS=="mmc2:0001:1", RUN+="/usr/sbin/iw dev %k set power_save off"

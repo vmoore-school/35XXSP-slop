@@ -1,0 +1,51 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    # Native arm64: nothing is emulated, and the kernel/U-Boot "cross" stages
+    # just use the native compiler.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image names
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "IMAGE=localhost/rg35xxsp-bootc:latest" >> "$GITHUB_ENV"
+          echo "TARGET_IMGREF=ghcr.io/${owner}/rg35xxsp-bootc:latest" >> "$GITHUB_ENV"
+
+      - name: Install just
+        run: sudo apt-get update && sudo apt-get install -y just
+
+      - name: Build image
+        run: just build
+
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+          sudo podman push "$IMAGE" "docker://$TARGET_IMGREF"
+
+      - name: Build disk images
+        run: |
+          for ram in lpddr4 lpddr3; do
+            just disk-image "$ram" 8G
+            zstd -T0 -10 --rm output/rg35xxsp.img -o "output/rg35xxsp-${ram}.img.zst"
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rg35xxsp-disk-images
+          path: output/*.img.zst
+          compression-level: 0
