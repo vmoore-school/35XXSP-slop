@@ -76,7 +76,19 @@ RUN kver="$(ls /usr/lib/modules)" && \
     dracut --force --kver "${kver}" "/usr/lib/modules/${kver}/initramfs.img"
 
 # ostree/bootc root layout: state lives under /var, /usr is the image.
-RUN rm -rf /boot /home /root /usr/local /srv /opt /mnt /var && \
+# The image's /var never reaches the device, so turn the directories and
+# symlinks packages put there (e.g. /var/lock -> /run/lock) into tmpfiles rules,
+# skipping paths another tmpfiles.d file already declares.
+RUN printf 'd /var/%s 0755 root root -\n' opt home srv mnt usrlocal > /usr/lib/tmpfiles.d/bootc-base-dirs.conf && \
+    printf 'd /var/roothome 0700 root root -\nd /run/media 0755 root root -\n' >> /usr/lib/tmpfiles.d/bootc-base-dirs.conf && \
+    systemd-tmpfiles --cat-config > /tmp/tmpfiles-declared && \
+    find /var -mindepth 1 -path /var/cache -prune -o -path /var/log -prune -o \
+      -path /var/lib/apt -prune -o -path /var/lib/dpkg -prune -o \
+      \( -type d -printf 'd %p %#m %u %g -\n' \) -o \( -type l -printf 'L %p - - - - %l\n' \) | \
+      awk 'NR == FNR { if ($1 !~ /^#/) seen[$2] = 1; next } !($2 in seen)' /tmp/tmpfiles-declared - \
+      > /usr/lib/tmpfiles.d/rg35xxsp-var.conf && \
+    rm -f /tmp/tmpfiles-declared && \
+    rm -rf /boot /home /root /usr/local /srv /opt /mnt /var && \
     mkdir -p /sysroot /boot /usr/lib/ostree /var && \
     ln -sT sysroot/ostree /ostree && \
     ln -sT var/roothome /root && \
@@ -85,8 +97,6 @@ RUN rm -rf /boot /home /root /usr/local /srv /opt /mnt /var && \
     ln -sT var/mnt /mnt && \
     ln -sT var/home /home && \
     ln -sT ../var/usrlocal /usr/local && \
-    printf 'd /var/%s 0755 root root -\n' opt home srv mnt usrlocal > /usr/lib/tmpfiles.d/bootc-base-dirs.conf && \
-    printf 'd /var/roothome 0700 root root -\nd /run/media 0755 root root -\n' >> /usr/lib/tmpfiles.d/bootc-base-dirs.conf && \
     sed -i 's|^HOME=.*|HOME=/var/home|' /etc/default/useradd
 
 LABEL containers.bootc=1
