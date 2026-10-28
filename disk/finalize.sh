@@ -23,7 +23,8 @@ uboot="${bootloader_dir}/u-boot-${ram}.bin"
 loop="$(losetup -P --show -f "${img}")"
 mnt="$(mktemp -d)"
 cleanup() {
-  umount -R "${mnt}/esp" "${mnt}/root" 2>/dev/null || true
+  umount "${mnt}/esp" 2>/dev/null || true
+  umount "${mnt}/root" 2>/dev/null || true
   losetup -d "${loop}"
 }
 trap cleanup EXIT
@@ -40,6 +41,9 @@ part_named() {
 esp="$(part_named EFI-SYSTEM)"
 root="$(part_named root)"
 [ -n "${esp}" ] && [ -n "${root}" ] || { echo "Could not find ESP/root on ${loop}" >&2; exit 1; }
+
+# A friendly volume name for when the card is plugged into a PC.
+fatlabel "${esp}" RG35XXSP
 
 mkdir -p "${mnt}/root" "${mnt}/esp"
 mount "${root}" "${mnt}/root"
@@ -81,5 +85,33 @@ cat > "${mnt}/esp/rg35xxsp.txt" <<'EOF'
 #bootslot=2
 EOF
 
+install -d "${mnt}/esp/provision"
+cat > "${mnt}/esp/provision/wifi.txt.example" <<'END'
+# Rename to wifi.txt. Read on every boot; one ssid/password pair per network.
+ssid=My Network
+password=hunter22
+END
+cat > "${mnt}/esp/provision/authorized_keys.example" <<'END'
+# Rename to authorized_keys and replace with your SSH public key(s) to allow
+# `ssh root@<device>`. The device's IP address is in logs/status.txt.
+END
+cat > "${mnt}/esp/README.txt" <<'END'
+RG35XX-SP bootc image
+
+rg35xxsp.txt   boot overrides (panel device tree, previous deployment)
+uboot.log      last U-Boot stage reached; stage 4 means the kernel started
+logs/          Linux boot logs and status, refreshed every 5 minutes
+provision/     WiFi networks and SSH keys to install on boot
+
+Status LED during boot: 1 blink = boot script started, 3 = loading the
+kernel, 4 = starting the kernel.
+END
+
 dd if="${uboot}" of="${loop}" bs=1K seek=128 conv=notrunc,fsync status=none
 echo "Wrote $(basename "${uboot}") at 128 KiB"
+
+# Desktops hide partitions typed "EFI System". U-Boot ignores the type and the
+# OS finds this partition by its name (EFI-SYSTEM), so make it plain
+# "Microsoft basic data" to show up on any PC like a USB stick.
+umount "${mnt}/esp"
+sfdisk --no-reread --part-type "${loop}" "${esp##*p}" EBD0A0A2-B9E5-4433-87C0-68B6B72699C7

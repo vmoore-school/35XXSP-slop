@@ -52,7 +52,7 @@ RUN sed -i 's/^Components: main$/Components: main non-free-firmware/' /etc/apt/s
       systemd systemd-sysv systemd-resolved systemd-timesyncd udev dbus \
       ostree ostree-boot dracut skopeo podman bubblewrap zstd \
       e2fsprogs dosfstools fdisk util-linux kmod \
-      iwd iw firmware-realtek \
+      iwd iw iproute2 firmware-realtek \
       openssh-server ca-certificates less nano && \
     rm -rf /var/lib/apt/lists/*
 
@@ -63,7 +63,8 @@ COPY --from=kernel /out/usr/ /usr/
 COPY --from=bootloader /out/ /usr/lib/rg35xxsp/bootloader/
 COPY system/ /
 
-RUN systemctl enable systemd-networkd systemd-resolved systemd-timesyncd iwd ssh && \
+RUN systemctl enable systemd-networkd systemd-resolved systemd-timesyncd iwd ssh \
+      rg35xxsp-esp-provision.service rg35xxsp-esp-logs.timer && \
     systemctl mask systemd-firstboot.service && \
     rm -f /etc/ssh/ssh_host_*_key* && \
     echo uninitialized > /etc/machine-id && \

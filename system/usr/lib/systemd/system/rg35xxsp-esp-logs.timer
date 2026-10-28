@@ -1,0 +1,12 @@
+[Unit]
+Description=Write boot diagnostics to the ESP periodically
+# Timers start early, so this still fires if later boot stages hang.
+DefaultDependencies=no
+Before=timers.target
+
+[Timer]
+OnBootSec=45s
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

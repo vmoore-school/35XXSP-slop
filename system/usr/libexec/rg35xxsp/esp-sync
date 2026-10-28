@@ -1,0 +1,78 @@
+#!/bin/bash
+# Exchange files with the ESP, the one partition any PC can read and write.
+#
+#   esp-sync provision   install WiFi networks and SSH keys dropped in /provision
+#   esp-sync logs        write boot diagnostics to /logs
+set -uo pipefail
+
+esp_dev=/dev/disk/by-partlabel/EFI-SYSTEM
+mnt=/run/rg35xxsp/esp
+
+exec 9>/run/rg35xxsp-esp.lock
+flock 9
+mkdir -p "${mnt}"
+mount -o noatime "${esp_dev}" "${mnt}" || exit 1
+trap 'umount "${mnt}"' EXIT
+
+# iwd names network files after the SSID, hex-encoded with a leading '=' when
+# the SSID has anything beyond letters, digits, space, '_' and '-'.
+iwd_name() {
+  if [[ "$1" =~ ^[A-Za-z0-9\ _-]+$ ]]; then
+    printf '%s' "$1"
+  else
+    printf '=%s' "$(printf '%s' "$1" | od -An -tx1 | tr -d ' \n')"
+  fi
+}
+
+provision() {
+  local src="${mnt}/provision"
+  [ -d "${src}" ] || return 0
+
+  # wifi.txt: blocks of "ssid=..." followed by "password=..." lines.
+  if [ -f "${src}/wifi.txt" ]; then
+    install -d -m 700 /var/lib/iwd
+    local ssid="" key value
+    while IFS='=' read -r key value; do
+      value="${value%$'\r'}"
+      case "${key}" in
+        ssid) ssid="${value}" ;;
+        password)
+          [ -n "${ssid}" ] || continue
+          printf '[Security]\nPassphrase=%s\n' "${value}" \
+            | install -m 600 /dev/stdin "/var/lib/iwd/$(iwd_name "${ssid}").psk"
+          echo "Added WiFi network ${ssid}"
+          ssid=""
+          ;;
+      esac
+    done < "${src}/wifi.txt"
+  fi
+
+  if [ -f "${src}/authorized_keys" ]; then
+    install -d -m 700 /root/.ssh
+    tr -d '\r' < "${src}/authorized_keys" | install -m 600 /dev/stdin /root/.ssh/authorized_keys
+    echo "Installed root SSH authorized_keys"
+  fi
+}
+
+logs() {
+  local out="${mnt}/logs"
+  mkdir -p "${out}"
+  {
+    date
+    echo; uname -a
+    echo; ip -brief address
+    echo; iwctl station list 2>&1
+    echo; bootc status 2>&1
+    echo; systemctl --failed --no-pager 2>&1
+  } > "${out}/status.txt"
+  journalctl -b -o short-monotonic --no-pager > "${out}/journal.txt" 2>&1
+  journalctl -b -1 -o short-monotonic --no-pager > "${out}/journal-previous-boot.txt" 2>&1
+  dmesg > "${out}/dmesg.txt" 2>&1
+  sync
+}
+
+case "${1:-}" in
+  provision) provision ;;
+  logs) logs ;;
+  *) echo "usage: $0 provision|logs" >&2; exit 2 ;;
+esac

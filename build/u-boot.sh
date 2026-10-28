@@ -43,10 +43,12 @@ for p in "${vendor}"/u-boot/patches/*.patch; do
   patch -d "${ubsrc}" -p1 --no-backup-if-mismatch < "${p}"
 done
 cp "${vendor}"/u-boot/configs/*_defconfig "${ubsrc}/configs/"
-# disk/boot.cmd needs the script bootmeth and ext4 reads from the ostree sysroot.
+# disk/boot.cmd needs the script bootmeth, ext4 reads from the ostree sysroot,
+# and FAT writes for its progress log on the ESP.
 for cfg in "${ubsrc}"/configs/anbernic_rg35xx_h700_lpddr*_defconfig; do
   printf '%s\n' CONFIG_BOOTMETH_SCRIPT=y CONFIG_FS_EXT4=y CONFIG_CMD_EXT4=y \
-    CONFIG_CMD_FS_GENERIC=y CONFIG_CMD_IMPORTENV=y >> "${cfg}"
+    CONFIG_CMD_FS_GENERIC=y CONFIG_CMD_IMPORTENV=y CONFIG_CMD_EXPORTENV=y \
+    CONFIG_FS_FAT=y CONFIG_CMD_FAT=y CONFIG_FAT_WRITE=y CONFIG_CMD_PART=y >> "${cfg}"
 done
 
 # SPL + U-Boot proper must fit between the 128 KiB boot ROM offset and the

@@ -78,6 +78,21 @@ smoke test; the resulting disk image won't boot the device.
 console login (`openssl passwd -6`). A UART on the board's test pads
 (`ttyS0`, 115200) is the best way to watch the first boots.
 
+## Debugging without a serial console
+
+The ESP is typed as an ordinary data partition labelled `RG35XXSP`, so it
+mounts on any PC. The display stays dark until Linux's panel driver loads, so:
+
+- **LED:** `boot.scr` blinks the status LED once when it starts, 3 times
+  before loading the kernel, and 4 times right before starting it.
+- **`uboot.log`** on the ESP records the last U-Boot stage reached.
+  Stage 4 means the kernel was started.
+- **`logs/`** on the ESP gets the journal, dmesg and `status.txt` (IP address,
+  `bootc status`, failed units) 45 s after boot and every 5 minutes after.
+  The previous boot's journal is kept too.
+- **`provision/`**: rename `wifi.txt.example` and `authorized_keys.example`
+  and fill them in to get WiFi and `ssh root@<ip>` without a keyboard.
+
 ## On the device
 
 - **Updates:** `bootc upgrade`, then reboot.

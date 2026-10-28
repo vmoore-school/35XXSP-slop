@@ -1,0 +1,8 @@
+[Unit]
+Description=Write boot diagnostics to the ESP
+Requires=dev-disk-by\x2dpartlabel-EFI\x2dSYSTEM.device
+After=dev-disk-by\x2dpartlabel-EFI\x2dSYSTEM.device local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/rg35xxsp/esp-sync logs

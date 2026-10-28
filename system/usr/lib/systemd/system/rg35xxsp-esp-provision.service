@@ -1,0 +1,12 @@
+[Unit]
+Description=Install WiFi networks and SSH keys from the ESP
+Requires=dev-disk-by\x2dpartlabel-EFI\x2dSYSTEM.device
+After=dev-disk-by\x2dpartlabel-EFI\x2dSYSTEM.device local-fs.target
+Before=iwd.service ssh.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/rg35xxsp/esp-sync provision
+
+[Install]
+WantedBy=multi-user.target
