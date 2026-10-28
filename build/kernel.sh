@@ -74,7 +74,9 @@ cd "${work}"
 fetch "https://github.com/hackbar/rocknix-joypad/archive/${JOYPAD_COMMIT}.tar.gz" \
   "${JOYPAD_SHA256}" joypad.tar.gz
 tar -xf joypad.tar.gz
-make -C "${work}/linux-${LINUX_VERSION}" M="${work}/rocknix-joypad-${JOYPAD_COMMIT}" -j"${jobs}" modules
+# DEVICE selects the driver variant; left empty, its Makefile builds only the
+# plain rocknix-joypad, not the singleadc one the H700 device trees use.
+make -C "${work}/linux-${LINUX_VERSION}" M="${work}/rocknix-joypad-${JOYPAD_COMMIT}" DEVICE=H700 -j"${jobs}" modules
 install -Dm644 -t "${moddir}/extra/rocknix-joypad" "${work}/rocknix-joypad-${JOYPAD_COMMIT}"/*.ko
 "${CROSS_COMPILE}strip" --strip-debug "${moddir}"/extra/rocknix-joypad/*.ko
 
