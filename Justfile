@@ -4,12 +4,15 @@ target_imgref := env("TARGET_IMGREF", image)
 output := justfile_directory() / "output"
 
 # bootc install needs the image in root's container storage, so everything
-# that touches the image runs under sudo.
-podman := "sudo podman"
+# that touches the image runs as root (PODMAN="pkexec podman" also works).
+podman := env("PODMAN", "sudo podman")
+# Only for smoke-testing the pipeline on x86 without emulation; such an image
+# won't boot the device.
+platform := env("PLATFORM", "linux/arm64")
 
 # Build the bootc image (arm64; needs qemu-user binfmt on x86 hosts)
 build:
-    {{podman}} build --platform linux/arm64 -t {{image}} .
+    {{podman}} build --platform {{platform}} -t {{image}} .
 
 # Build only the cross-compiled kernel or bootloader stage (native, fast to iterate)
 build-stage stage:
@@ -23,7 +26,7 @@ disk-image ram="lpddr4" size="8G":
     rm -f "{{output}}/rg35xxsp.img"
     truncate -s "{{size}}" "{{output}}/rg35xxsp.img"
     run() {
-        {{podman}} run --rm --privileged --pid=host --platform linux/arm64 \
+        {{podman}} run --rm --privileged --pid=host --platform {{platform}} \
             --security-opt label=type:unconfined_t \
             -v /dev:/dev -v /var/lib/containers:/var/lib/containers \
             -v "{{output}}:/data" -v "{{justfile_directory()}}/disk:/disk:ro" \

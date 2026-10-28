@@ -29,12 +29,17 @@ cleanup() {
 trap cleanup EXIT
 udevadm settle 2>/dev/null || true
 
-part_by() { # lsblk column, value
-  lsblk -lnpo "PATH,$1" "${loop}" | awk -v v="$2" '$2 == v { print $1 }'
+# Probe the GPT directly: there's no udev database inside the container, so
+# lsblk can't report labels.
+part_named() {
+  for dev in "${loop}"p*; do
+    [ "$(blkid -p -o value -s PART_ENTRY_NAME "${dev}")" = "$1" ] && echo "${dev}"
+  done
+  return 0
 }
-esp="$(part_by PARTLABEL EFI-SYSTEM)"
-root="$(part_by LABEL root)"
-[ -n "${esp}" ] && [ -n "${root}" ] || { echo "Could not find ESP/root on ${loop}" >&2; lsblk -o +PARTLABEL,LABEL "${loop}" >&2; exit 1; }
+esp="$(part_named EFI-SYSTEM)"
+root="$(part_named root)"
+[ -n "${esp}" ] && [ -n "${root}" ] || { echo "Could not find ESP/root on ${loop}" >&2; exit 1; }
 
 mkdir -p "${mnt}/root" "${mnt}/esp"
 mount "${root}" "${mnt}/root"

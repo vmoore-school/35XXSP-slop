@@ -50,7 +50,7 @@ RUN sed -i 's/^Components: main$/Components: main non-free-firmware/' /etc/apt/s
     apt-get update && \
     apt-get install -y --no-install-recommends \
       systemd systemd-sysv systemd-resolved systemd-timesyncd udev dbus \
-      ostree ostree-boot dracut skopeo bubblewrap \
+      ostree ostree-boot dracut skopeo podman bubblewrap zstd \
       e2fsprogs dosfstools fdisk util-linux kmod \
       iwd iw firmware-realtek \
       openssh-server ca-certificates less nano && \

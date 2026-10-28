@@ -14,7 +14,12 @@ also disabled.
 
 ## Status
 
-Scaffold. Builds; not yet booted on hardware. No frontend or emulators yet.
+Scaffold, not yet booted on hardware. No frontend or emulators yet.
+
+Verified locally: the kernel and U-Boot stages build. The whole pipeline
+(image build, `bootc container lint`, `bootc install to-disk`, finalize) was
+also run end to end with an amd64 build of the image. The real arm64 image is
+built only by CI.
 
 ## How it boots
 
@@ -64,6 +69,10 @@ just disk-image               # -> output/rg35xxsp.img
 just disk-image lpddr3        # 2026 board revision with LPDDR3 RAM
 just flash /dev/sdX
 ```
+
+`PODMAN="pkexec podman"` runs the root steps through polkit instead of sudo.
+`PLATFORM=linux/amd64` builds the whole pipeline without emulation for a quick
+smoke test; the resulting disk image won't boot the device.
 
 `ROOT_PASSWORD_HASH='<crypt hash>' just disk-image` sets a root password for
 console login (`openssl passwd -6`). A UART on the board's test pads
