@@ -80,6 +80,14 @@ smoke test; the resulting disk image won't boot the device.
 console login (`openssl passwd -6`). A UART on the board's test pads
 (`ttyS0`, 115200) is the best way to watch the first boots.
 
+## Storage
+
+The disk image is 3 GiB so it flashes quickly; any card of 4 GB or more
+works. On boot, `rg35xxsp-grow-root.service` moves the backup GPT to the end
+of the card and grows the root partition and ext4 (online) to fill it. It
+does nothing once root already reaches the end, so it also picks up a move to
+a bigger card. ROMs and saves live on the root filesystem under `/var`.
+
 ## Debugging without a serial console
 
 The ESP is typed as an ordinary data partition labelled `RG35XXSP`, so it
@@ -120,7 +128,6 @@ packages for that commit.
 
 - Deep sleep: ROCKNIX's H700 suspend stub (TF-A patch plus SRAM stub) isn't
   ported, so suspend is s2idle only.
-- The root partition doesn't grow to fill the SD card yet.
 - No ROMs/saves partition, frontend, RetroArch, or emulator cores yet.
 - All `apt` installs must happen before the Containerfile's final layout step,
   which removes `/var` (and with it the dpkg database).

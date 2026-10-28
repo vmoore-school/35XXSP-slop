@@ -46,7 +46,7 @@ jobs:
       # only built on request (Run workflow -> lpddr3) while testing on LPDDR4.
       - name: Build LPDDR4 disk image
         run: |
-          just disk-image lpddr4 8G
+          just disk-image lpddr4 3G
           zstd -T0 -10 --rm output/rg35xxsp.img -o output/rg35xxsp-lpddr4.img.zst
 
       - uses: actions/upload-artifact@v4
@@ -58,7 +58,7 @@ jobs:
       - name: Build LPDDR3 disk image
         if: inputs.lpddr3
         run: |
-          just disk-image lpddr3 8G
+          just disk-image lpddr3 3G
           zstd -T0 -10 --rm output/rg35xxsp.img -o output/rg35xxsp-lpddr3.img.zst
 
       - uses: actions/upload-artifact@v4

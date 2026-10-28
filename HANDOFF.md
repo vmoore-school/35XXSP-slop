@@ -43,7 +43,8 @@ display and systemd all come up. Also confirmed:
    lsblk                                                         # find the card
    sudo dd if=rg35xxsp-lpddr4.img of=/dev/<card> bs=4M conv=fsync status=progress
    ```
-   The image is 8 GiB, so the card must be larger than 8 GB.
+   The image is 3 GiB (any 4 GB+ card); root grows to fill the card on
+   first boot.
 2. Re-plug the card and open the `RG35XXSP` partition. In `provision/`:
    - create `wifi.txt`:
      ```
@@ -113,15 +114,16 @@ image booted. `cat /boot/loader/uEnv.txt` should list two deployments
 
 1. Verify the remaining hardware (audio, buttons, GPU rendering) and
    `bootc rollback`.
-2. Grow the root partition to fill the card on first boot, then shrink the
-   image (~3 GiB) so flashing is faster.
-3. ROMs/saves partition that survives reflashing and is readable from a PC.
-4. Frontend + RetroArch + libretro cores (Debian packages RetroArch and many
+2. Confirm root grows on the device (`df -h /`, `journalctl -u
+   rg35xxsp-grow-root`). ROMs and saves go on root, e.g. under `/root/roms`
+   for now (decided against a separate partition); pick the final path with
+   the frontend.
+3. Frontend + RetroArch + libretro cores (Debian packages RetroArch and many
    cores). Launch straight to KMS/DRM from a systemd unit, no desktop.
    Bring over muOS ideas, configs and themes where the licenses allow.
-5. Deep sleep: port ROCKNIX's H700 suspend stub (TF-A patch + SRAM stub).
+4. Deep sleep: port ROCKNIX's H700 suspend stub (TF-A patch + SRAM stub).
    Suspend is s2idle only for now.
-6. Pin the Debian base by digest for reproducible builds.
+5. Pin the Debian base by digest for reproducible builds.
 
 ## Leftover on the desktop (zirconium)
 

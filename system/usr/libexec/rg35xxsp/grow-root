@@ -1,0 +1,44 @@
+#!/bin/bash
+# Grow the root partition and its ext4 filesystem to fill the SD card.
+#
+# The disk image is kept small for fast flashing; on the device, root should
+# take the whole card. Runs every boot and does nothing once root already ends
+# at the last usable sector, so it also picks up a move to a bigger card.
+set -euo pipefail
+
+# ostree mounts the physical root filesystem at /sysroot.
+part="${ROOT_DEV:-$(findmnt -no SOURCE /sysroot)}"
+part="${part%%\[*}"
+name="$(basename "${part}")"
+disk="/dev/$(lsblk -no PKNAME "${part}")"
+partno="$(cat "/sys/class/block/${name}/partition")"
+
+# When a small image is written to a bigger card, the backup GPT sits in the
+# middle of the card; move it to the end so the partition can grow past it.
+sfdisk --relocate gpt-bak-std "${disk}" >/dev/null 2>&1 || true
+
+last_usable="$(sfdisk -d "${disk}" | awk '/^last-lba:/ { print $2 }')"
+start="$(cat "/sys/class/block/${name}/start")"
+size="$(cat "/sys/class/block/${name}/size")"
+end=$(( start + size - 1 ))
+
+# Leave it be unless at least 64 MiB (131072 sectors) can be gained.
+if (( last_usable - end < 131072 )); then
+  exit 0
+fi
+
+echo "Growing ${part} on ${disk} (partition ${partno})"
+echo ", +" | sfdisk --no-reread --no-tell-kernel -N "${partno}" "${disk}"
+partx -u -n "${partno}" "${disk}"
+
+# Online resize needs a writable mount; ostree keeps /sysroot read-only.
+remounted=0
+if [ -z "${ROOT_DEV:-}" ] && findmnt -no OPTIONS /sysroot | grep -qw ro; then
+  mount -o remount,rw /sysroot
+  remounted=1
+fi
+resize2fs "${part}" || rc=$?
+if (( remounted )); then
+  mount -o remount,ro /sysroot
+fi
+exit "${rc:-0}"

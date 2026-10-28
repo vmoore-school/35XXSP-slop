@@ -19,7 +19,7 @@ build-stage stage:
     podman build --target {{stage}} -t rg35xxsp-{{stage}} .
 
 # Create output/rg35xxsp.img from the built image. ram: lpddr4 or lpddr3
-disk-image ram="lpddr4" size="8G":
+disk-image ram="lpddr4" size="3G":
     #!/usr/bin/env bash
     set -euo pipefail
     mkdir -p "{{output}}"

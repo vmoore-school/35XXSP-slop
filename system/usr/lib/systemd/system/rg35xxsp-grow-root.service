@@ -1,0 +1,10 @@
+[Unit]
+Description=Grow the root partition to fill the SD card
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/rg35xxsp/grow-root
+
+[Install]
+WantedBy=multi-user.target
