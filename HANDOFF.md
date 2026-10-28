@@ -17,15 +17,18 @@ stand and what to do next.
 ## What works (confirmed on hardware)
 
 The image boots all the way to a login prompt: U-Boot, `boot.scr`, kernel,
-display and systemd all come up.
+display and systemd all come up. Also confirmed:
+
+- `bootc upgrade` + reboot boots the new deployment: ostree's U-Boot backend
+  rewrites `uEnv.txt` and `boot.scr` follows it.
+- WiFi (rtw88, iwd, DHCPv4), `provision/wifi.txt` and `authorized_keys`, SSH.
+- Display: DSI-1 at 640x480, 60 Hz, default SP panel device tree.
+- Battery reporting (AXP717), GPU detected (Mali, sun50i-h616-mali).
 
 ## Not yet checked
 
-- Logging in: the image has no root password, so log in over SSH (below).
-- WiFi, audio, controls (rocknix-joypad), battery reporting, GPU (panfrost).
-- `bootc upgrade`: whether ostree rewrites `/boot/loader/uEnv.txt` and the
-  next boot picks up the new deployment. This is the last unproven piece of
-  the boot design. `bootc rollback` likewise.
+- Audio, controls (rocknix-joypad), GPU rendering (panfrost/Mesa).
+- `bootc rollback` and the `bootslot=2` override.
 
 ## Get a shell on the device
 
@@ -105,7 +108,8 @@ image booted. `cat /boot/loader/uEnv.txt` should list two deployments
 
 ## Backlog
 
-1. Verify hardware (WiFi, audio, controls, battery, GPU) and `bootc upgrade`.
+1. Verify the remaining hardware (audio, controls, GPU rendering) and
+   `bootc rollback`.
 2. Grow the root partition to fill the card on first boot, then shrink the
    image (~3 GiB) so flashing is faster.
 3. ROMs/saves partition that survives reflashing and is readable from a PC.
