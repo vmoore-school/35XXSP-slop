@@ -24,10 +24,13 @@ display and systemd all come up. Also confirmed:
 - WiFi (rtw88, iwd, DHCPv4), `provision/wifi.txt` and `authorized_keys`, SSH.
 - Display: DSI-1 at 640x480, 60 Hz, default SP panel device tree.
 - Battery reporting (AXP717), GPU detected (Mali, sun50i-h616-mali).
+- Gamepad: `rocknix_singleadc_joypad` loads and registers "H700 Gamepad"
+  (needed `DEVICE=H700` when building the module). Individual buttons and
+  sticks not exercised yet.
 
 ## Not yet checked
 
-- Audio, controls (rocknix-joypad), GPU rendering (panfrost/Mesa).
+- Audio, button-by-button input, GPU rendering (panfrost/Mesa).
 - `bootc rollback` and the `bootslot=2` override.
 
 ## Get a shell on the device
@@ -108,7 +111,7 @@ image booted. `cat /boot/loader/uEnv.txt` should list two deployments
 
 ## Backlog
 
-1. Verify the remaining hardware (audio, controls, GPU rendering) and
+1. Verify the remaining hardware (audio, buttons, GPU rendering) and
    `bootc rollback`.
 2. Grow the root partition to fill the card on first boot, then shrink the
    image (~3 GiB) so flashing is faster.
