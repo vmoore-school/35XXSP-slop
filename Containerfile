@@ -53,6 +53,8 @@ RUN sed -i 's/^Components: main$/Components: main non-free-firmware/' /etc/apt/s
       ostree ostree-boot dracut skopeo podman bubblewrap zstd \
       e2fsprogs dosfstools fdisk util-linux kmod \
       iwd iw iproute2 firmware-realtek \
+      libpam-systemd dbus-user-session \
+      alsa-utils alsa-ucm-conf pipewire pipewire-alsa wireplumber \
       openssh-server ca-certificates less nano fastfetch && \
     rm -rf /var/lib/apt/lists/*
 

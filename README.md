@@ -112,6 +112,10 @@ mounts on any PC. The display stays dark until Linux's panel driver loads, so:
   `fdtfile=` line in `rg35xxsp.txt`.
 - **WiFi:** `iwctl` (iwd), with systemd-networkd handling DHCP. The login
   screen shows the WiFi IP, and the device answers to `rg35xxsp.local` (mDNS).
+- **Audio:** the built-in H616 codec, through PipeWire and WirePlumber in the
+  user's session. ALSA's UCM profile (`/usr/share/alsa/ucm2/Allwinner/sun4i-h616`,
+  with ROCKNIX's DAC fix) switches between speaker and headphones on the jack.
+  Volume: `wpctl set-volume @DEFAULT_AUDIO_SINK@ 60%`.
 
 ## Updating ROCKNIX bits
 
