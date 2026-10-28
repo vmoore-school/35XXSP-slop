@@ -51,9 +51,9 @@ for cfg in "${ubsrc}"/configs/anbernic_rg35xx_h700_lpddr*_defconfig; do
     CONFIG_FS_FAT=y CONFIG_CMD_FAT=y CONFIG_FAT_WRITE=y CONFIG_CMD_PART=y >> "${cfg}"
 done
 
-# SPL + U-Boot proper must fit between the 128 KiB boot ROM offset and the
+# SPL + U-Boot proper must fit between the 256 KiB boot ROM offset and the
 # first partition at 1 MiB.
-max_size=$(( 1024 * 1024 - 128 * 1024 ))
+max_size=$(( 1024 * 1024 - 256 * 1024 ))
 for ram in lpddr4 lpddr3; do
   make -C "${ubsrc}" mrproper
   make -C "${ubsrc}" "anbernic_rg35xx_h700_${ram}_defconfig"

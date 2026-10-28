@@ -25,12 +25,13 @@ built only by CI.
 
 ```
 SD card
-├─ 0–1 MiB     GPT, then U-Boot (SPL + TF-A + U-Boot) at 128 KiB
+├─ 0–1 MiB     GPT, then U-Boot (SPL + TF-A + U-Boot) at 256 KiB
 ├─ p1  ESP     vfat: boot.scr, rg35xxsp.txt (per-device overrides)
 └─ p2  root    ext4: ostree sysroot, /boot/loader/uEnv.txt
 ```
 
-1. The H700 boot ROM finds U-Boot at 128 KiB. The usual 8 KiB location
+1. The H700 boot ROM finds U-Boot at 256 KiB, the H616 family's fallback
+   location (older Allwinner SoCs use 128 KiB). The usual 8 KiB location
    overlaps the GPT.
 2. U-Boot runs `boot.scr` from the ESP (`disk/boot.cmd`).
 3. `boot.scr` imports `/boot/loader/uEnv.txt` and boots that kernel, initramfs

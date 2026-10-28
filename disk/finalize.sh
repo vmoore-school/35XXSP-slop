@@ -7,7 +7,8 @@
 #      /boot/loader/uEnv.txt (the backend only updates an existing file, so
 #      seed the first one from the BLS entry bootc just wrote).
 #   2. Put boot.scr and an override template on the ESP.
-#   3. Write U-Boot at 128 KiB, past the GPT, where the H700 boot ROM also looks.
+#   3. Write U-Boot at 256 KiB, past the GPT. The H616-family boot ROM (H700
+#      included) checks there after 8 KiB; 128 KiB is only for older SoCs.
 #
 # Environment:
 #   RAM                 lpddr4 (default) or lpddr3 for the 2026 board revision
@@ -107,8 +108,8 @@ Status LED during boot: 1 blink = boot script started, 3 = loading the
 kernel, 4 = starting the kernel.
 END
 
-dd if="${uboot}" of="${loop}" bs=1K seek=128 conv=notrunc,fsync status=none
-echo "Wrote $(basename "${uboot}") at 128 KiB"
+dd if="${uboot}" of="${loop}" bs=1K seek=256 conv=notrunc,fsync status=none
+echo "Wrote $(basename "${uboot}") at 256 KiB"
 
 # Desktops hide partitions typed "EFI System". U-Boot ignores the type and the
 # OS finds this partition by its name (EFI-SYSTEM), so make it plain

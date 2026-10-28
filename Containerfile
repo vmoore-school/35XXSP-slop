@@ -58,7 +58,7 @@ RUN sed -i 's/^Components: main$/Components: main non-free-firmware/' /etc/apt/s
 
 COPY --from=bootc-builder /out/ /
 COPY --from=kernel /out/usr/ /usr/
-# The bootloader is written outside the ostree deployment (raw at 128 KiB and
+# The bootloader is written outside the ostree deployment (raw at 256 KiB and
 # on the ESP), but shipping it in the image keeps it versioned with the OS.
 COPY --from=bootloader /out/ /usr/lib/rg35xxsp/bootloader/
 COPY system/ /
